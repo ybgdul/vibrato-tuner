@@ -1,5 +1,5 @@
 import { frequencyToTone } from "../utilities/noteUtils";
-import { Meter } from "./meter";
+import { Meter } from "./Meter";
 
 export function TunerDisplay( {pitch, clarity, isActive }) { 
     if(!isActive) {return <div className="tuner-inactive">Click start to begin</div>}
