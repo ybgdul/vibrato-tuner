@@ -16,14 +16,20 @@ export function usePitchDetector() {
     const animationRef = useRef(null);
     const processorRef = useRef(null);
     const streamRef = useRef(null);
+    const pitchRef = useRef(null);
+
     const start = async () => {
         try {
+            
+            //this stream is LITERALLY incoming audio from the mic, just raw
             const stream = await navigator.mediaDevices.getUserMedia({audio: true});
             streamRef.current = stream;
 
             audioContextRef.current = new AudioContext();
             const audioContext = audioContextRef.current;
 
+            //this method of audio context is used to get the raw stream to the correct format
+            //pitch detector will not work with raw audio stream
             const source = audioContext.createMediaStreamSource(stream);
             sourceRef.current = source;
 
@@ -33,17 +39,26 @@ export function usePitchDetector() {
             processorRef.current = processor;
 
             processor.onaudioprocess = (event) => {
-                console.log("audio is running");
                 const inputData = event.inputBuffer.getChannelData(0);
                 const [detectedPitch, detectedClarity] = detector.findPitch(inputData, audioContext.sampleRate);
-                console.log("processing audio")
-                console.log({detectedPitch, detectedClarity});
-                if (detectedClarity > 0.25 && detectedPitch > 80 && detectedPitch < 2000) {
-                setPitch(detectedPitch);
-                setClarity(detectedClarity);
+
+                //rejecting bad frames
+                if(detectedClarity < 0.25) return;
+                if(detectedPitch < 80 || detectedPitch > 2000) return;
+
+                //reject spikes 
+                if(pitchRef.current && Math.abs(pitchRef.current - detectedPitch) > 150) return;
+
+                const smoother = 0.15;
+                
+                if(pitchRef.current === null) pitchRef.current = detectedPitch;
+                else { 
+                    pitchRef.current = smoother * detectedPitch + (1 - smoother) * pitchRef.current;
                 }
+                setPitch(pitchRef.current);
+                setClarity(detectedClarity);
+                
             };
-            console.log("start called")
 
             source.connect(processor);
             processor.connect(audioContext.destination);
