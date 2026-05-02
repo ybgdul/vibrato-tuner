@@ -1,0 +1,84 @@
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+button {
+  font-size: 1.2rem;
+  padding: 12px 24px;
+  margin: 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.note-name {
+  font-size: 4rem;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.cents {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.meter-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+.meter-track {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.05s;
+  border-radius: 10px;
+}
+
+.meter-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.tune-status {
+  font-size: 1.2rem;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.frequency {
+  margin-top: 10px;
+  color: #666;
+}
+
+.tuner-waiting, .tuner-inactive {
+  color: #999;
+  font-size: 1.2rem;
+  margin: 40px;
+}
+
+.status {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: #666;
+}
