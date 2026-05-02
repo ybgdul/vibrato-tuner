@@ -14,9 +14,12 @@ export function usePitchDetector() {
     const audioContextRef = useRef(null);
     const sourceRef = useRef(null);
     const animationRef = useRef(null);
+    const processorRef = useRef(null);
+    const streamRef = useRef(null);
     const start = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            streamRef.current = stream;
 
             audioContextRef.current = new AudioContext();
             const audioContext = audioContextRef.current;
@@ -24,22 +27,22 @@ export function usePitchDetector() {
             const source = audioContext.createMediaStreamSource(stream);
             sourceRef.current = source;
 
-            const detector = PitchDetector.forFloat32Array(audioContext.sampleRate, 2048);
+            const detector = PitchDetector.forFloat32Array(2048);
 
             const processor = audioContext.createScriptProcessor(2048, 1, 1);
+            processorRef.current = processor;
 
             processor.onaudioprocess = (event) => {
                 const inputData = event.inputBuffer.getChannelData(0);
                 const [detectedPitch, detectedClarity] = detector.findPitch(inputData, audioContext.sampleRate);
                 
-                if (detectedClarity > 0.8 && detectedPitch > 80 && detectedPitch < 2000) {
+                if (detectedClarity > 0.3 && detectedPitch > 80 && detectedPitch < 2000) {
                 setPitch(detectedPitch);
                 setClarity(detectedClarity);
                 }
             };
 
             source.connect(processor);
-            processor.connect(audioContext.destination);
 
             await audioContext.resume();
             setIsActive(true);
@@ -49,10 +52,29 @@ export function usePitchDetector() {
         }
     };
     const stop = () => {
-        if(audioContextRef.current) audioContextRef.current.close();
-        if(sourceRef.current) sourceRef.current.close();
+        if (processorRef.current) {
+            processorRef.current.close();
+            processorRef.current = null;
+        }
+
+        if (sourceRef.current) {
+            sourceRef.current.disconnect();
+            sourceRef.current = null;
+        }
+
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+
         setIsActive(false);
         setPitch(null);
+        setClarity(0);
     };
     useEffect( () => {
         return () => {
