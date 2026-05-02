@@ -33,16 +33,20 @@ export function usePitchDetector() {
             processorRef.current = processor;
 
             processor.onaudioprocess = (event) => {
+                console.log("audio is running");
                 const inputData = event.inputBuffer.getChannelData(0);
                 const [detectedPitch, detectedClarity] = detector.findPitch(inputData, audioContext.sampleRate);
-                
-                if (detectedClarity > 0.3 && detectedPitch > 80 && detectedPitch < 2000) {
+                console.log("processing audio")
+                console.log({detectedPitch, detectedClarity});
+                if (detectedClarity > 0.25 && detectedPitch > 80 && detectedPitch < 2000) {
                 setPitch(detectedPitch);
                 setClarity(detectedClarity);
                 }
             };
+            console.log("start called")
 
             source.connect(processor);
+            processor.connect(audioContext.destination);
 
             await audioContext.resume();
             setIsActive(true);
@@ -53,8 +57,8 @@ export function usePitchDetector() {
     };
     const stop = () => {
         if (processorRef.current) {
-            processorRef.current.close();
-            processorRef.current = null;
+            processorRef.current.disconnect();
+            processorRef.current.onaudioprocess = null;
         }
 
         if (sourceRef.current) {
